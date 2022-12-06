@@ -1,7 +1,8 @@
 package com.cqrs.domain.category.city.query.findone;
 
 import org.springframework.stereotype.Component;
-import shortbus.RequestHandler;
+
+import com.cqrs.base.RequestHandler;
 
 @Component
 public class FindOneQueryHandler implements RequestHandler<FindOneQuery, FindOneQueryResult> {

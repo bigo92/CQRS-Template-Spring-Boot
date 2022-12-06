@@ -1,8 +1,7 @@
-package com.cqrs;
+package com.cqrs.base;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import shortbus.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.InvocationTargetException;
@@ -10,10 +9,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MediatorCustomImpl implements Mediator {
+public class MediatorImpl implements Mediator {
 
     @Autowired
     private ApplicationContext ctx;
@@ -22,7 +23,7 @@ public class MediatorCustomImpl implements Mediator {
     private HttpServletResponse httpResponse;
 
     @Override
-    public <T> Response<T> request(Request<T> request) {
+    public <T> Response<T> send(Request<T> request) {
         //
         Response<T> response = new Response<>();
         try {
@@ -30,7 +31,7 @@ public class MediatorCustomImpl implements Mediator {
                     ctx);
             response.data = plan.invoke(request);
         } catch (Exception e) {
-            response.exception = e;
+            response.errors = new HashMap<String,List<String>>();
         }
         //
         httpResponse.setStatus(500);
@@ -56,7 +57,7 @@ public class MediatorCustomImpl implements Mediator {
         }
 
         if (exceptions != null) {
-            response.exception = new AggregateException(exceptions);
+            //response.exception = new AggregateException(exceptions);
         }
 
         return response;
