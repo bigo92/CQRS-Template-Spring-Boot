@@ -56,11 +56,12 @@ public class MediatorImpl implements Mediator {
                         });
                     }
                 } catch (Exception e) {
-                    response.errors = new HashMap<>();
-                    List<String> emasge = new ArrayList<>();
-                    emasge.add("ValidationResult:" + e.getMessage());
-                    response.errors.put("system", emasge);
-                    String test = e.getMessage();
+                    if(!(e instanceof ClassNotFoundException)){
+                        response.errors = new HashMap<>();
+                        List<String> emasge = new ArrayList<>();
+                        emasge.add("ValidationResult:" + e.getMessage());
+                        response.errors.put("system", emasge);
+                    }
                 }
             }
 
