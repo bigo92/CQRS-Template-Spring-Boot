@@ -1,8 +1,9 @@
 package com.cqrs.controller.category;
 
+import com.cqrs.application.category.city.query.findone.FindOneQuery;
+import com.cqrs.application.category.city.query.findone.FindOneQueryResult;
 import com.cqrs.base.*;
-import com.cqrs.domain.category.city.query.findone.FindOneQuery;
-import com.cqrs.domain.category.city.query.findone.FindOneQueryResult;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

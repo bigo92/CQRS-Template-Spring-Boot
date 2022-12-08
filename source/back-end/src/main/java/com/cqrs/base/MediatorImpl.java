@@ -3,16 +3,30 @@ package com.cqrs.base;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
+import com.cqrs.application.category.city.query.findone.FindOneQuery;
+import com.cqrs.application.category.city.query.findone.FindOneQueryValidator;
+
+import br.com.fluentvalidator.Validator;
+import br.com.fluentvalidator.context.ValidationContext;
+import br.com.fluentvalidator.context.ValidationResult;
+
 import javax.servlet.http.HttpServletResponse;
+
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class MediatorImpl implements Mediator {
 
@@ -27,15 +41,69 @@ public class MediatorImpl implements Mediator {
         //
         Response<T> response = new Response<>();
         try {
+
+            if (request != null) {
+                String nameSpace = request.getClass().getName();
+
+                Class<?> clazz = Class.forName(nameSpace+"Validator");
+                if(clazz != null){
+                    Constructor<?> ctor = clazz.getConstructor();
+                    Validator<FindOneQuery>  vld = (Validator<FindOneQuery>) ctor.newInstance();
+    
+                    ValidationResult result = vld.validate((FindOneQuery) request);
+    
+                    if (!result.isValid()) {
+                        response.errors = new HashMap<>();
+                        result.getErrors().forEach(x -> {
+                            List<String> emasge = new ArrayList<>();
+                            emasge.add(x.getMessage());
+                            response.errors.put(x.getField(), emasge);
+                        });
+                    }
+                } 
+            }
+
             MediatorPlanRequest<T> plan = new MediatorPlanRequest<>(RequestHandler.class, "handle", request.getClass(),
                     ctx);
             response.data = plan.invoke(request);
         } catch (Exception e) {
-            response.errors = new HashMap<String,List<String>>();
+            response.errors = new HashMap<String, List<String>>();
         }
         //
         httpResponse.setStatus(500);
         return response;
+    }
+
+    private List<Class<?>> getAllExtendedTypesRecursively(Class<?> clazz) {
+        List<Class<?>> res = new ArrayList<>();
+
+        do {
+            res.add(clazz);
+
+            // First, add all the interfaces implemented by this class
+            Class<?>[] extend = clazz.getInterfaces();
+            if (extend.length > 0) {
+                res.addAll(Arrays.asList(extend));
+
+                for (Class<?> interfaze : extend) {
+                    res.addAll(getAllExtendedTypesRecursively(interfaze));
+                }
+            }
+
+            // Add the super class
+            Class<?> superClass = clazz.getSuperclass();
+
+            // Interfaces does not have java,lang.Object as superclass, they have null, so
+            // break the cycle and return
+            if (superClass == null) {
+                break;
+            }
+
+            // Now inspect the superclass
+            clazz = superClass;
+        } while (!"java.lang.Object".equals(clazz.getCanonicalName()));
+
+        return res;
     }
 
     @Override
@@ -57,7 +125,7 @@ public class MediatorImpl implements Mediator {
         }
 
         if (exceptions != null) {
-            //response.exception = new AggregateException(exceptions);
+            // response.exception = new AggregateException(exceptions);
         }
 
         return response;
@@ -68,7 +136,7 @@ public class MediatorImpl implements Mediator {
         Object handlerInstanceBuilder;
 
         public MediatorPlanRequest(Class<?> handlerType, String handlerMethodName, Class<?> messageType,
-                                   ApplicationContext context) throws NoSuchMethodException, SecurityException, ClassNotFoundException {
+                ApplicationContext context) throws NoSuchMethodException, SecurityException, ClassNotFoundException {
             handlerInstanceBuilder = getBean(handlerType, messageType, context);
             handleMethod = handlerInstanceBuilder.getClass().getDeclaredMethod(handlerMethodName, messageType);
         }
@@ -98,7 +166,7 @@ public class MediatorImpl implements Mediator {
 
     static class MediatorPlanNotify {
         public static List<NotificationHandler<Notification>> getInstances(ApplicationContext ctx,
-                                                                           Class<?> messageType) {
+                Class<?> messageType) {
             List<NotificationHandler<Notification>> instances = new ArrayList<>();
 
             Map<String, ?> beans = ctx.getBeansOfType(NotificationHandler.class);

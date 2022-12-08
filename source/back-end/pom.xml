@@ -32,6 +32,11 @@
             <artifactId>jooq</artifactId>
             <version>3.14.15</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.mvallim</groupId>
+            <artifactId>java-fluent-validator</artifactId>
+            <version>1.10.0</version>
+          </dependency>
     </dependencies>
 
     <build>

@@ -1,4 +1,4 @@
-package com.cqrs.domain.category.city.query.findone;
+package com.cqrs.application.category.city.query.findone;
 
 import org.springframework.stereotype.Component;
 
