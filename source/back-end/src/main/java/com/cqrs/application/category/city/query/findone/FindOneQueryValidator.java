@@ -9,7 +9,7 @@ public class FindOneQueryValidator extends AbstractValidator<FindOneQuery> {
         setPropertyOnContext("findOneQuery");
 
         ruleFor(FindOneQuery::getId)
-                .must(x -> x == null || !x.isEmpty())
+                .must(x -> x != null && !x.isEmpty())
                 .withMessage("Không được để trống")
                 .withFieldName("id");
     }

@@ -2,10 +2,6 @@ package com.cqrs.base;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-
-import com.cqrs.application.category.city.query.findone.FindOneQuery;
-import com.cqrs.application.category.city.query.findone.FindOneQueryValidator;
-
 import br.com.fluentvalidator.Validator;
 import br.com.fluentvalidator.context.ValidationContext;
 import br.com.fluentvalidator.context.ValidationResult;
@@ -44,14 +40,13 @@ public class MediatorImpl implements Mediator {
 
             if (request != null) {
                 String nameSpace = request.getClass().getName();
-
-                Class<?> clazz = Class.forName(nameSpace+"Validator");
-                if(clazz != null){
+                try {
+                    Class<?> clazz = Class.forName(nameSpace + "Validator");
                     Constructor<?> ctor = clazz.getConstructor();
-                    Validator<FindOneQuery>  vld = (Validator<FindOneQuery>) ctor.newInstance();
-    
-                    ValidationResult result = vld.validate((FindOneQuery) request);
-    
+                    Validator<T> vld = (Validator<T>) ctor.newInstance();
+
+                    ValidationResult result = vld.validate((T) request);
+
                     if (!result.isValid()) {
                         response.errors = new HashMap<>();
                         result.getErrors().forEach(x -> {
@@ -60,7 +55,13 @@ public class MediatorImpl implements Mediator {
                             response.errors.put(x.getField(), emasge);
                         });
                     }
-                } 
+                } catch (Exception e) {
+                    response.errors = new HashMap<>();
+                    List<String> emasge = new ArrayList<>();
+                    emasge.add("ValidationResult:" + e.getMessage());
+                    response.errors.put("system", emasge);
+                    String test = e.getMessage();
+                }
             }
 
             MediatorPlanRequest<T> plan = new MediatorPlanRequest<>(RequestHandler.class, "handle", request.getClass(),
@@ -72,38 +73,6 @@ public class MediatorImpl implements Mediator {
         //
         httpResponse.setStatus(500);
         return response;
-    }
-
-    private List<Class<?>> getAllExtendedTypesRecursively(Class<?> clazz) {
-        List<Class<?>> res = new ArrayList<>();
-
-        do {
-            res.add(clazz);
-
-            // First, add all the interfaces implemented by this class
-            Class<?>[] extend = clazz.getInterfaces();
-            if (extend.length > 0) {
-                res.addAll(Arrays.asList(extend));
-
-                for (Class<?> interfaze : extend) {
-                    res.addAll(getAllExtendedTypesRecursively(interfaze));
-                }
-            }
-
-            // Add the super class
-            Class<?> superClass = clazz.getSuperclass();
-
-            // Interfaces does not have java,lang.Object as superclass, they have null, so
-            // break the cycle and return
-            if (superClass == null) {
-                break;
-            }
-
-            // Now inspect the superclass
-            clazz = superClass;
-        } while (!"java.lang.Object".equals(clazz.getCanonicalName()));
-
-        return res;
     }
 
     @Override
