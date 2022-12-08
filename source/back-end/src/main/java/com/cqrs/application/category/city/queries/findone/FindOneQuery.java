@@ -1,4 +1,4 @@
-package com.cqrs.application.category.city.query.findone;
+package com.cqrs.application.category.city.queries.findone;
 
 import com.cqrs.base.Request;
 

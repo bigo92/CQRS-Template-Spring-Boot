@@ -1,15 +1,13 @@
-package com.cqrs.application.category.city.query.findone;
+package com.cqrs.application.category.city.commands.create;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class FindOneQueryResult {
-
+public class CreateCommandResult {
+    private String id;
     private String name;
 }

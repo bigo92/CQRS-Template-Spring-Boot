@@ -1,7 +1,7 @@
 package com.cqrs.controller.category;
 
-import com.cqrs.application.category.city.query.findone.FindOneQuery;
-import com.cqrs.application.category.city.query.findone.FindOneQueryResult;
+import com.cqrs.application.category.city.queries.findone.FindOneQuery;
+import com.cqrs.application.category.city.queries.findone.FindOneQueryResult;
 import com.cqrs.base.*;
 
 import lombok.RequiredArgsConstructor;
