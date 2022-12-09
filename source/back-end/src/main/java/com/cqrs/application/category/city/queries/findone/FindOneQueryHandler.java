@@ -9,6 +9,7 @@ public class FindOneQueryHandler implements RequestHandler<FindOneQuery, FindOne
 
     @Override
     public FindOneQueryResult handle(FindOneQuery request) {
+        //
         return new FindOneQueryResult("Bach");
 
     }
